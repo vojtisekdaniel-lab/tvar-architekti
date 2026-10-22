@@ -112,15 +112,14 @@ body { overflow-x: hidden; }
     var u = clamp((f - HOLD) / (1 - 2 * HOLD));
     return k + u * (1 - SOFT) + ss(u) * SOFT;
   }
-  // Klidový pohyb: dokud se neskroluje, hrany prvního tvaru se pomalu posouvají (jen kolmo na sebe, úhly zůstávají pravé)
-  var IDLE_AMP = 11, IDLE_END = 0.34;
+  // Klidový pohyb: dokud se neskroluje, tvar pomalu přechází mezi různými tvary (jako lávová lampa).
+  // Keyframy jsou předpočítané (tools/idle.py), všechny mají stejný počet vertexů a pravé úhly.
+  var IDLE = __IDLE__, LEG = 9, IDLE_END = 0.34;
   function idleShape(a, t, w) {
-    var n = a.length / 2, off = [], i, e, o = a.slice();
-    for (e = 0; e < n; e++) off.push(IDLE_AMP * w * Math.sin(2 * Math.PI * t / (13 + (e * 5) % 9) + e * 1.9));
-    for (i = 0; i < n; i++) {
-      if (i % 2 === 0) { o[2 * i] += off[(i - 1 + n) % n]; o[2 * i + 1] += off[i]; }
-      else { o[2 * i] += off[i]; o[2 * i + 1] += off[i - 1]; }
-    }
+    var L = IDLE.length - 1, x = (t / LEG) % L, i = Math.floor(x), f = x - i;
+    f = 0.5 - 0.5 * Math.cos(Math.PI * f);
+    var A = IDLE[i], B = IDLE[i + 1], o = new Array(a.length);
+    for (var j = 0; j < a.length; j++) o[j] = a[j] + (A[j] + (B[j] - A[j]) * f - a[j]) * w;
     return o;
   }
   var idleOn = !reduce;
