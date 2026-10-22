@@ -59,7 +59,7 @@ body { overflow-x: hidden; }
 (function () {
   var TR = __TRANS__, PH = __PHOTOS__;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var N = 9, TAIL = 0.65, SP = 1.5, HOLD = 0.06, SOFT = 0.65, NS = 'http://www.w3.org/2000/svg';
+  var N = 9, TAIL = 0.65, SP = 1.5, BLUR = 34, HOLD = 0.06, SOFT = 0.65, NS = 'http://www.w3.org/2000/svg';
   var strip = document.getElementById('strip'), root = document.getElementById('root'), spacer = document.getElementById('spacer');
   // texty jsou ve vlastní vrstvě nad obrysem; pozadí (barvy kroků) zůstává pod ním
   var txt = strip.cloneNode(true); txt.id = 'txt';
@@ -81,7 +81,9 @@ body { overflow-x: hidden; }
     var list = PH_BY[s].map(function (pb) {
       var p = PH[pb[0]], m = p.m;
       var im = el('image', { href: p.f, width: p.w, height: p.h, preserveAspectRatio: 'none', transform: 'matrix(' + m.join(' ') + ')', opacity: 0 }, g);
-      return { im: im, idx: pb[1], nextAdj: PH_BY[s].some(function (q) { return q[1] === pb[1] + 1; }) };
+      var fl = el('filter', { id: 'bl' + s + pb[0], x: '-15%', y: '-15%', width: '130%', height: '130%', 'color-interpolation-filters': 'sRGB' }, defs);
+      var gb = el('feGaussianBlur', { stdDeviation: 0 }, fl);
+      return { im: im, fl: 'url(#bl' + s + pb[0] + ')', gb: gb, blur: 0, idx: pb[1], nextAdj: PH_BY[s].some(function (q) { return q[1] === pb[1] + 1; }) };
     });
     var line = el('polygon', { 'class': 'poly' }, lineG);
     var mpoly = el('polygon', { fill: '#000' }, mask);
@@ -129,7 +131,10 @@ body { overflow-x: hidden; }
         var o;
         if (T < it.idx) o = clamp(T - (it.idx - 1));
         else o = it.nextAdj ? (T < it.idx + 1 ? 1 : 0) : clamp(1 - (T - it.idx));
-        if (it.im._o !== o) { it.im._o = o; it.im.setAttribute('opacity', o.toFixed(3)); it.im.style.display = o > 0 ? '' : 'none'; }
+        if (it.im._o !== o) { it.im._o = o; it.im.setAttribute('opacity', o.toFixed(3)); it.im.style.display = o > 0 ? '' : 'none';
+          var bl = o > 0.995 ? 0 : BLUR * Math.pow(1 - o, 1.4);
+          if (bl < 0.3) { if (it.blur) { it.im.removeAttribute('filter'); it.blur = 0; } }
+          else { if (!it.blur) it.im.setAttribute('filter', it.fl); it.blur = bl; it.gb.setAttribute('stdDeviation', bl.toFixed(1)); } }
       });
     }
     var fa = ss(clamp((P - (N - 1) - 0.05) / (TAIL - 0.2)));
