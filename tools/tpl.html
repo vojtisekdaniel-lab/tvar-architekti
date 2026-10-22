@@ -59,7 +59,7 @@ body { overflow-x: hidden; }
 (function () {
   var TR = __TRANS__, PH = __PHOTOS__;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var N = 9, TAIL = 0.65, SP = 1.5, BLUR = 34, HOLD = 0.06, SOFT = 0.65, NS = 'http://www.w3.org/2000/svg';
+  var N = 9, TAIL = 0.65, SP = 1.5, BLUR = 26, LATE = 0.4, HOLD = 0.06, SOFT = 0.65, NS = 'http://www.w3.org/2000/svg';
   var strip = document.getElementById('strip'), root = document.getElementById('root'), spacer = document.getElementById('spacer');
   // texty jsou ve vlastní vrstvě nad obrysem; pozadí (barvy kroků) zůstává pod ním
   var txt = strip.cloneNode(true); txt.id = 'txt';
@@ -129,8 +129,8 @@ body { overflow-x: hidden; }
       if (j === 0) fillPoly.setAttribute('points', p);
       S.list.forEach(function (it) {
         var o;
-        if (T < it.idx) o = clamp(T - (it.idx - 1));
-        else o = it.nextAdj ? (T < it.idx + 1 ? 1 : 0) : clamp(1 - (T - it.idx));
+        if (T < it.idx) o = ss(clamp((T - (it.idx - 1) - LATE) / (1 - LATE)));
+        else o = it.nextAdj ? (T < it.idx + 1 ? 1 : 0) : ss(clamp(1 - (T - it.idx) / (1 - LATE)));
         if (it.im._o !== o) { it.im._o = o; it.im.setAttribute('opacity', o.toFixed(3)); it.im.style.display = o > 0 ? '' : 'none';
           var bl = o > 0.995 ? 0 : BLUR * Math.pow(1 - o, 1.4);
           if (bl < 0.3) { if (it.blur) { it.im.removeAttribute('filter'); it.blur = 0; } }
