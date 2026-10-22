@@ -14,7 +14,7 @@ body { overflow-x: hidden; }
 /* Každý krok je 1920×1080 plátno z Figmy, uprostřed a zvětšené na okno (--sc). Pozice textů jsou ve Figma pixelech. */
 .fr { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform: translate(-50%, -50%) scale(var(--sc, 1)); transform-origin: 50% 50%; font-family: 'Axo', sans-serif; font-weight: 400; color: #191919; }
 .t { position: absolute; margin: 0; white-space: nowrap; font-size: 18px; line-height: normal; }
-.h1 { font-size: 108px; line-height: 96px; font-weight: 400; }
+.h1 { font-size: 108px; line-height: 116px; font-weight: 400; }
 .cap { font-size: 68px; line-height: 66px; }
 .cap span { color: #b1b1b1; }
 .big { font-size: 78px; line-height: 84px; }
@@ -40,7 +40,7 @@ body { overflow-x: hidden; }
 </head><body>
 <div id="stage" aria-hidden="false">
   <div id="strip">
-    <section class="scr" style="--bg:#fff" aria-label="Krok 1"><div class="fr"><h1 class="t h1" style="left:58.96px;top:452px">We do architecture<br>of staying</h1></div></section>
+    <section class="scr" style="--bg:#fff" aria-label="Krok 1"><div class="fr"><h1 class="t h1" style="left:49.3px;top:397.3px">Monumentally ordinary<br><span class="up">architecture</span>.</h1></div></section>
     <section class="scr" style="--bg:#fff" aria-label="Krok 2"><div class="fr"><p class="t cap" style="left:56.67px;top:900.32px">Public Service Centre<br><span>Valaliky</span></p></div></section>
     <section class="scr" style="--bg:#fff" aria-label="Krok 3"><div class="fr"><p class="t cap" style="left:56.67px;top:900.32px">Public Service Centre<br><span>Valaliky</span></p></div></section>
     <section class="scr" style="--bg:#fff" aria-label="Krok 4"><div class="fr"><p class="t cap" style="left:56.67px;top:900.32px">Culture centre<br><span>Svätý Jur</span></p></div></section>
@@ -112,6 +112,18 @@ body { overflow-x: hidden; }
     var u = clamp((f - HOLD) / (1 - 2 * HOLD));
     return k + u * (1 - SOFT) + ss(u) * SOFT;
   }
+  // Klidový pohyb: dokud se neskroluje, hrany prvního tvaru se pomalu posouvají (jen kolmo na sebe, úhly zůstávají pravé)
+  var IDLE_AMP = 11, IDLE_END = 0.34;
+  function idleShape(a, t, w) {
+    var n = a.length / 2, off = [], i, e, o = a.slice();
+    for (e = 0; e < n; e++) off.push(IDLE_AMP * w * Math.sin(2 * Math.PI * t / (13 + (e * 5) % 9) + e * 1.9));
+    for (i = 0; i < n; i++) {
+      if (i % 2 === 0) { o[2 * i] += off[(i - 1 + n) % n]; o[2 * i + 1] += off[i]; }
+      else { o[2 * i] += off[i]; o[2 * i + 1] += off[i - 1]; }
+    }
+    return o;
+  }
+  var idleOn = !reduce;
   function draw(P) {
     var T = remap(P);
     for (var q = 0; q < N; q++) { var vis = Math.abs(T - q) < 1.05 ? '' : 'hidden'; if (strip.children[q]._v !== vis) { strip.children[q]._v = vis; strip.children[q].style.visibility = vis; txt.children[q].style.visibility = vis; } }
@@ -124,7 +136,9 @@ body { overflow-x: hidden; }
       var hide = j > 0 && !split;
       S.g.style.display = S.line.style.display = S.mpoly.style.display = hide ? 'none' : '';
       if (hide) continue;
-      var p = pts(tr[j].a, tr[j].b, s);
+      var A0 = tr[j].a;
+      if (idleOn && k === 0 && j === 0 && T < IDLE_END) A0 = idleShape(A0, performance.now() / 1000, 1 - ss(T / IDLE_END));
+      var p = pts(A0, tr[j].b, s);
       S.line.setAttribute('points', p); S.cpoly.setAttribute('points', p); S.mpoly.setAttribute('points', p);
       if (j === 0) fillPoly.setAttribute('points', p);
       S.list.forEach(function (it) {
@@ -146,7 +160,7 @@ body { overflow-x: hidden; }
     cur += (target - cur) * (reduce ? 1 : 0.085);
     if (Math.abs(target - cur) < 0.0005) cur = target;
     draw(cur);
-    if (cur !== target) requestAnimationFrame(tick); else run = false;
+    if (cur !== target || (idleOn && remap(cur) < IDLE_END)) requestAnimationFrame(tick); else run = false;
   }
   window.__draw = function (P) { cur = target = P; draw(P); };
   window.addEventListener('scroll', read, { passive: true });
