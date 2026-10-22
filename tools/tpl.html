@@ -1,0 +1,119 @@
+<title>Tvar architekti – scroll</title>
+<style>
+/* Layout: každý krok návrhu je fullscreen "screen"; černý outline tvar je fixně uprostřed nad vším a při scrollu se přetváří. */
+:root { --ink: #141414; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #fff; }
+body { overflow-x: hidden; }
+#stage { position: fixed; inset: 0; overflow: hidden; }
+#strip { position: absolute; left: 0; top: 0; width: 100%; will-change: transform; }
+.scr { position: relative; width: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.scr img { display: block; flex: none; }
+#nav { position: absolute; z-index: 4; pointer-events: none; }
+#ov { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; overflow: visible; }
+.poly { fill: none; stroke: var(--ink); stroke-width: 4; stroke-linejoin: miter; vector-effect: non-scaling-stroke; }
+.fillp { fill: var(--ink); fill-opacity: 0; stroke: none; }
+#spacer { width: 1px; }
+.sr { position: absolute; left: -9999px; }
+</style>
+<div id="stage" aria-hidden="false">
+  <div id="strip"></div>
+  <img id="nav" src="assets/nav.png" alt="Work About Contact" width="280" height="32" draggable="false">
+  <svg id="ov" aria-hidden="true"><g id="root"></g></svg>
+</div>
+<div id="spacer"></div>
+<h1 class="sr">Tvar architekti</h1>
+<script>
+(function () {
+  var TR = __TRANS__, PH = __PHOTOS__, BG = __BGS__;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var N = 9, TAIL = 0.65, HOLD = 0.11, NS = 'http://www.w3.org/2000/svg';
+  var strip = document.getElementById('strip'), root = document.getElementById('root'), spacer = document.getElementById('spacer');
+  var imgs = [];
+  for (var i = 0; i < N; i++) {
+    var d = document.createElement('div'); d.className = 'scr'; d.style.background = BG[i];
+    var im = new Image(); im.src = 'assets/s' + (i + 1) + '.png'; im.alt = 'Krok ' + (i + 1); im.width = 1920; im.height = 1080; im.draggable = false;
+    d.appendChild(im); strip.appendChild(d); imgs.push(im);
+  }
+  function el(n, a, p) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; }
+  // sloty: 0 hlavní, 1 a 2 se objeví jen při rozdělení (4 -> 5) a spojení (5 -> 6)
+  var slots = [];
+  var PH_BY = [ [['p2', 1], ['p3', 2], ['p4', 3], ['p5a', 4], ['p7', 6]], [['p4', 3], ['p5b', 4]], [['p4', 3], ['p5c', 4]] ];
+  var defs = el('defs', {}, root);
+  // obrys = vnější půlka tlusté čáry sjednocení všech tvarů (vnitřek sjednocení maskujeme), takže se překryvy outline nikdy nevykreslí
+  var mask = el('mask', { id: 'um', maskUnits: 'userSpaceOnUse', x: -4000, y: -4000, width: 10000, height: 10000 }, defs);
+  el('rect', { x: -4000, y: -4000, width: 10000, height: 10000, fill: '#fff' }, mask);
+  var photoLayer = el('g', {}, root);
+  var fillPoly = el('polygon', { 'class': 'fillp' }, root);
+  var lineG = el('g', { mask: 'url(#um)' }, root);
+  for (var s = 0; s < 3; s++) {
+    var cp = el('clipPath', { id: 'cp' + s }, defs), cpoly = el('polygon', {}, cp);
+    var g = el('g', { 'clip-path': 'url(#cp' + s + ')' }, photoLayer);
+    var list = PH_BY[s].map(function (pb) {
+      var p = PH[pb[0]], m = p.m;
+      var im = el('image', { href: p.f, width: p.w, height: p.h, preserveAspectRatio: 'none', transform: 'matrix(' + m.join(' ') + ')', opacity: 0 }, g);
+      return { im: im, idx: pb[1], nextAdj: PH_BY[s].some(function (q) { return q[1] === pb[1] + 1; }) };
+    });
+    var line = el('polygon', { 'class': 'poly' }, lineG);
+    var mpoly = el('polygon', { fill: '#000' }, mask);
+    slots.push({ g: g, cpoly: cpoly, line: line, mpoly: mpoly, list: list });
+  }
+  function clamp(x) { return Math.max(0, Math.min(1, x)); }
+  function ss(x) { return x * x * (3 - 2 * x); }
+  function pts(a, b, t) {
+    var o = '';
+    for (var i = 0; i < a.length; i += 2) o += (a[i] + (b[i] - a[i]) * t).toFixed(1) + ',' + (a[i + 1] + (b[i + 1] - a[i + 1]) * t).toFixed(1) + ' ';
+    return o;
+  }
+  var vw = 0, vh = 0, sc = 1;
+  function layout() {
+    vw = window.innerWidth; vh = window.innerHeight; sc = Math.min(vw / 1920, vh / 1080);
+    for (var i = 0; i < N; i++) { strip.children[i].style.height = vh + 'px'; imgs[i].style.width = 1920 * sc + 'px'; imgs[i].style.height = 1080 * sc + 'px'; }
+    var nv = document.getElementById('nav'); nv.style.width = 280 * sc + 'px'; nv.style.height = 32 * sc + 'px'; nv.style.top = 38 * sc + 'px'; nv.style.right = ((vw - 1920 * sc) / 2 + 40 * sc) + 'px';
+    root.setAttribute('transform', 'translate(' + (vw - 1920 * sc) / 2 + ' ' + (vh - 1080 * sc) / 2 + ') scale(' + sc + ')');
+    spacer.style.height = ((N - 1 + TAIL) * vh + vh) + 'px';
+  }
+  function remap(P) { // každý krok chvíli odpočívá
+    P = Math.max(0, Math.min(N - 1, P));
+    var k = Math.min(Math.floor(P), N - 2), f = P - k;
+    if (P >= N - 1) return N - 1;
+    return k + ss(clamp((f - HOLD) / (1 - 2 * HOLD)));
+  }
+  function draw(P) {
+    var T = remap(P);
+    strip.style.transform = 'translate3d(0,' + (-T * vh).toFixed(1) + 'px,0)';
+    var k = Math.min(Math.floor(T), N - 2), s = T - k;
+    if (T >= N - 1) { k = N - 2; s = 1; }
+    var tr = TR[k], split = T > 3.0005 && T < 4.9995;
+    for (var j = 0; j < 3; j++) {
+      var S = slots[j];
+      var hide = j > 0 && !split;
+      S.g.style.display = S.line.style.display = S.mpoly.style.display = hide ? 'none' : '';
+      if (hide) continue;
+      var p = pts(tr[j].a, tr[j].b, s);
+      S.line.setAttribute('points', p); S.cpoly.setAttribute('points', p); S.mpoly.setAttribute('points', p);
+      if (j === 0) fillPoly.setAttribute('points', p);
+      S.list.forEach(function (it) {
+        var o;
+        if (T < it.idx) o = clamp(T - (it.idx - 1));
+        else o = it.nextAdj ? (T < it.idx + 1 ? 1 : 0) : clamp(1 - (T - it.idx));
+        if (it.im._o !== o) { it.im._o = o; it.im.setAttribute('opacity', o.toFixed(3)); }
+      });
+    }
+    var fa = ss(clamp((P - (N - 1) - 0.05) / (TAIL - 0.2)));
+    fillPoly.style.fillOpacity = fa.toFixed(3);
+  }
+  var target = 0, cur = 0, run = false;
+  function read() { target = window.pageYOffset / vh; if (!run) { run = true; requestAnimationFrame(tick); } }
+  function tick() {
+    cur += (target - cur) * (reduce ? 1 : 0.14);
+    if (Math.abs(target - cur) < 0.0005) cur = target;
+    draw(cur);
+    if (cur !== target) requestAnimationFrame(tick); else run = false;
+  }
+  window.__draw = function (P) { cur = target = P; draw(P); };
+  window.addEventListener('scroll', read, { passive: true });
+  window.addEventListener('resize', function () { layout(); read(); });
+  layout(); read(); draw(window.pageYOffset / vh);
+})();
+</script>
