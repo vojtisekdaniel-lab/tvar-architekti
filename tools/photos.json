@@ -1,6 +1,6 @@
 {
  "p2": {
-  "file": "assets/p2.jpg",
+  "file": "assets/photos/p2.jpg",
   "w": 1920,
   "h": 1300,
   "m": [
@@ -16,7 +16,7 @@
   "mad": 3.489463825387382
  },
  "p3": {
-  "file": "assets/p3.jpg",
+  "file": "assets/photos/p3.jpg",
   "w": 2400,
   "h": 1918,
   "m": [
@@ -32,7 +32,7 @@
   "mad": 4.432379982166256
  },
  "p4": {
-  "file": "assets/p4.jpg",
+  "file": "assets/photos/p4.jpg",
   "w": 2083,
   "h": 1400,
   "m": [
@@ -48,7 +48,7 @@
   "mad": 3.4451599807743496
  },
  "p5a": {
-  "file": "assets/p5a.jpg",
+  "file": "assets/photos/p5a.jpg",
   "w": 2400,
   "h": 1350,
   "m": [
@@ -64,7 +64,7 @@
   "mad": 8.301714881892954
  },
  "p5b": {
-  "file": "assets/p5b.jpg",
+  "file": "assets/photos/p5b.jpg",
   "w": 2400,
   "h": 1350,
   "m": [
@@ -80,7 +80,7 @@
   "mad": 7.675329355997197
  },
  "p5c": {
-  "file": "assets/p5c.jpg",
+  "file": "assets/photos/p5c.jpg",
   "w": 2400,
   "h": 1350,
   "m": [
@@ -96,7 +96,7 @@
   "mad": 9.152693308478
  },
  "p7": {
-  "file": "assets/p7.jpg",
+  "file": "assets/photos/p7.jpg",
   "w": 1000,
   "h": 1000,
   "m": [

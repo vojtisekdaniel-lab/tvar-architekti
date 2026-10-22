@@ -18,7 +18,7 @@ body { overflow-x: hidden; }
 </style>
 <div id="stage" aria-hidden="false">
   <div id="strip"></div>
-  <img id="nav" src="assets/nav.png" alt="Work About Contact" width="280" height="32" draggable="false">
+  <img id="nav" src="assets/screens/nav.png" alt="Work About Contact" width="280" height="32" draggable="false">
   <svg id="ov" aria-hidden="true"><g id="root"></g></svg>
 </div>
 <div id="spacer"></div>
@@ -32,7 +32,7 @@ body { overflow-x: hidden; }
   var imgs = [];
   for (var i = 0; i < N; i++) {
     var d = document.createElement('div'); d.className = 'scr'; d.style.background = BG[i];
-    var im = new Image(); im.src = 'assets/s' + (i + 1) + '.png'; im.alt = 'Krok ' + (i + 1); im.width = 1920; im.height = 1080; im.draggable = false;
+    var im = new Image(); im.src = 'assets/screens/s' + (i + 1) + '.png'; im.alt = 'Krok ' + (i + 1); im.width = 1920; im.height = 1080; im.draggable = false;
     d.appendChild(im); strip.appendChild(d); imgs.push(im);
   }
   function el(n, a, p) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; }
