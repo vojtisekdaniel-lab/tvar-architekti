@@ -28,7 +28,8 @@ body { overflow-x: hidden; }
 #txt .scr { background: none; }
 #strip .fr { display: none; }
 #nav { position: absolute; inset: 0; z-index: 7; pointer-events: none; }
-#nav .menu { position: absolute; right: 53.3px; top: 39px; display: flex; gap: 44px; font-size: 22px; line-height: normal; white-space: nowrap; }
+#nav .brand { position: absolute; left: 53.4px; top: 35px; font-size: 24px; line-height: normal; white-space: nowrap; color: inherit; text-decoration: none; pointer-events: auto; }
+#nav .menu { position: absolute; right: 53.3px; top: 36.5px; display: flex; gap: 44px; font-size: 22px; line-height: normal; white-space: nowrap; }
 #nav a { color: inherit; text-decoration: none; pointer-events: auto; }
 #ov { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; overflow: visible; }
 .poly { fill: none; stroke: var(--ink); stroke-width: 4; stroke-linejoin: miter; }
@@ -39,7 +40,7 @@ body { overflow-x: hidden; }
 </head><body>
 <div id="stage" aria-hidden="false">
   <div id="strip">
-    <section class="scr" style="--bg:#fff" aria-label="Krok 1"><div class="fr"><h1 class="t h1" style="left:58.96px;top:55.95px">We do architecture<br>of staying</h1></div></section>
+    <section class="scr" style="--bg:#fff" aria-label="Krok 1"><div class="fr"><h1 class="t h1" style="left:58.96px;top:452px">We do architecture<br>of staying</h1></div></section>
     <section class="scr" style="--bg:#fff" aria-label="Krok 2"><div class="fr"><p class="t cap" style="left:56.67px;top:900.32px">Public Service Centre<br><span>Valaliky</span></p></div></section>
     <section class="scr" style="--bg:#fff" aria-label="Krok 3"><div class="fr"><p class="t cap" style="left:56.67px;top:900.32px">Public Service Centre<br><span>Valaliky</span></p></div></section>
     <section class="scr" style="--bg:#fff" aria-label="Krok 4"><div class="fr"><p class="t cap" style="left:56.67px;top:900.32px">Culture centre<br><span>Svätý Jur</span></p></div></section>
@@ -49,7 +50,7 @@ body { overflow-x: hidden; }
     <section class="scr" style="--bg:#c4c6ce" aria-label="Krok 8"><div class="fr"><h2 class="t cta up ul" style="left:294.81px;top:498.93px;font-weight:400;margin:0">Get in touch</h2><p class="t cta" style="left:-192.72px;top:918.42px">A project in mind?</p></div></section>
     <section class="scr" style="--bg:#fff" aria-label="Krok 9"><div class="fr"><p class="t up" style="left:40px;top:1029.23px">Tvar architekti</p><p class="t grey" style="left:190.15px;top:1029.23px">© 2026</p><p class="t grey r" style="right:1035.9px;top:1029.23px">Architecture studio for public buildings</p><p class="t" style="left:1418.89px;top:1029.23px">hello@tvar.sk</p><p class="t" style="left:1544.89px;top:1029.23px">+421 000 000 000</p><p class="t" style="left:1707.89px;top:1029.23px">Instagram</p><p class="t" style="left:1811.89px;top:1029.23px">LinkedIn</p></div></section>
   </div>
-  <nav id="nav"><div class="fr"><div class="menu"><a href="#">Work</a><a href="#">About</a><a href="#">Contact</a></div></div></nav>
+  <nav id="nav"><div class="fr"><a class="brand" href="#">TVAR Architekti</a><div class="menu"><a href="#">Work</a><a href="#">About</a><a href="#">Contact</a></div></div></nav>
   <svg id="ov" aria-hidden="true"><g id="root"></g></svg>
 </div>
 <div id="spacer"></div>
@@ -58,7 +59,7 @@ body { overflow-x: hidden; }
 (function () {
   var TR = __TRANS__, PH = __PHOTOS__;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var N = 9, TAIL = 0.65, SP = 1.3, EASE = 0.45, NS = 'http://www.w3.org/2000/svg';
+  var N = 9, TAIL = 0.65, SP = 1.5, HOLD = 0.06, SOFT = 0.65, NS = 'http://www.w3.org/2000/svg';
   var strip = document.getElementById('strip'), root = document.getElementById('root'), spacer = document.getElementById('spacer');
   // texty jsou ve vlastní vrstvě nad obrysem; pozadí (barvy kroků) zůstává pod ním
   var txt = strip.cloneNode(true); txt.id = 'txt';
@@ -102,11 +103,12 @@ body { overflow-x: hidden; }
     root.setAttribute('transform', 'translate(' + (vw - 1920 * sc) / 2 + ' ' + (vh - 1080 * sc) / 2 + ') scale(' + sc + ')');
     spacer.style.height = ((N - 1 + TAIL) * SP * vh + vh) + 'px';
   }
-  function remap(P) { // plynulé zpomalení u každého kroku, nikdy úplné zastavení
+  function remap(P) { // každý krok chvíli odpočívá (HOLD), přechod mezi nimi je měkký
     P = Math.max(0, Math.min(N - 1, P));
     if (P >= N - 1) return N - 1;
     var k = Math.min(Math.floor(P), N - 2), f = P - k;
-    return k + f * (1 - EASE) + ss(f) * EASE;
+    var u = clamp((f - HOLD) / (1 - 2 * HOLD));
+    return k + u * (1 - SOFT) + ss(u) * SOFT;
   }
   function draw(P) {
     var T = remap(P);
